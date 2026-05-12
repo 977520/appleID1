@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>共享账号（实时更新）</title>
     <style>
         body {
@@ -11,7 +10,7 @@
             background: #f5f5f5;
             font-family: Arial, sans-serif;
         }
-        /* 密码框 */
+        /* 密码框样式 */
         .pwd-box {
             text-align: center;
             padding: 60px 20px;
@@ -56,21 +55,16 @@
         .iframe-box {
             width: 800px;
             height: 2400px;
-            overflow: hidden;
+            overflow: hidden; /* 超出部分直接隐藏 */
             border: 1px solid #ccc;
-            margin: 0 auto;
-            max-width: 100%;
         }
         /* 把网页往上、往左偏移，只露出你要的那一块 */
         .iframe-box iframe {
             width: 800px;
             height: 3650px;
-            margin-top: -1320px;
+            margin-top: -1320px;   /* 向上偏移，隐藏顶部导航 */
             margin-left: 0px;
             border: none;
-        }
-        h2 {
-            text-align: center;
         }
     </style>
 </head>
@@ -78,8 +72,8 @@
 
 <script>
 // ==================== 配置 ====================
-const ACCESS_PASSWORD = "123456";    // 访问密码
-const EXPIRE_HOURS = 0.166667;       // 10分钟
+const ACCESS_PASSWORD = "123456";    
+const EXPIRE_HOURS = 0.033333;       // 2分钟
 // ==============================================
 
 const KEY = "pwd_expire_" + btoa(ACCESS_PASSWORD);
@@ -122,16 +116,16 @@ function checkPwd() {
         localStorage.setItem(KEY, firstUse);
     }
 
-    // 显示页面
+    // 显示原版页面内容
     document.body.innerHTML = `
         <div class="countdown">剩余可查看时间：<span id="timeLeft"></span></div>
         <h2>共享账号，实时更新（刷新需要一点时间）</h2>
         <div class="iframe-box">
-            <iframe src="https://www.ermao.net/blog/freeappleid/#%E6%9C%80%E6%96%B0%E5%85%8D%E8%B4%B9%E5%A4%96%E5%8C%BA-apple-id-%E8%B4%A6%E5%8F%B7%E6%B1%A0-%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0" scrolling="no"></iframe>
+            <iframe src="shturl.cc/IZJ2jLNZltLJaVD1fh0cLvAkkaNFi5fuJypkeB6JR9irXR8MFwh7OmyEOR3cJuUUSQuG9eqO6m2URcCssboK7rv2mYX4EJwx54ZcJHFNNc6IleueqylpSVdnbLIxMh0HtFp2aIBsoJudBUNZP8o7qvs9WrIqOL" scrolling="no"></iframe>
         </div>
     `;
 
-    // 倒计时
+    // 倒计时逻辑
     let expireTime = parseInt(firstUse) + EXPIRE_MS;
     updateCountdown();
     setInterval(updateCountdown, 1000);
