@@ -2,12 +2,36 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>共享账号（实时更新）</title>
     <style>
         body {
             margin: 0;
             padding: 20px;
             background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        /* 密码框 */
+        .pwd-box {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .pwd-box input {
+            padding: 12px 16px;
+            font-size: 16px;
+            width: 240px;
+            margin-bottom: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .pwd-box button {
+            padding: 12px 30px;
+            background: #0071e3;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
         }
         /* 倒计时样式 */
         .countdown {
@@ -32,76 +56,97 @@
         .iframe-box {
             width: 800px;
             height: 2400px;
-            overflow: hidden; /* 超出部分直接隐藏 */
+            overflow: hidden;
             border: 1px solid #ccc;
+            margin: 0 auto;
+            max-width: 100%;
         }
         /* 把网页往上、往左偏移，只露出你要的那一块 */
         .iframe-box iframe {
             width: 800px;
             height: 3650px;
-            margin-top: -1320px;   /* 向上偏移，隐藏顶部导航 */
+            margin-top: -1320px;
             margin-left: 0px;
             border: none;
+        }
+        h2 {
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
 <script>
-// ======================================
-// 1天有效期控制 + 倒计时
-// ======================================
-const ONE_DAY = 24 * 60 * 60 * 1000; // 24小时
-let firstOpen = localStorage.getItem("first_open_time");
+// ==================== 配置 ====================
+const ACCESS_PASSWORD = "123456";    // 访问密码
+const EXPIRE_HOURS = 0.166667;       // 10分钟
+// ==============================================
 
-// 第一次访问，记录时间
-if (!firstOpen) {
-    firstOpen = Date.now();
-    localStorage.setItem("first_open_time", firstOpen);
-}
-
-let expireTime = parseInt(firstOpen) + ONE_DAY;
+const KEY = "pwd_expire_" + btoa(ACCESS_PASSWORD);
+const EXPIRE_MS = EXPIRE_HOURS * 60 * 60 * 1000;
 let now = Date.now();
+let firstUse = localStorage.getItem(KEY);
+let isExpired = false;
 
-// 判断是否过期
-if (now > expireTime) {
-    document.write(`<div class="expired-box">您的查看有效期已结束！</div>`);
+if (firstUse) {
+    isExpired = now - parseInt(firstUse) > EXPIRE_MS;
 }
-</script>
 
-<!-- 未过期才显示页面 -->
-<script>
-if (now <= expireTime) {
-    document.write(`
+// 已过期
+if (isExpired) {
+    document.write('<div class="expired-box">您的查看有效期已结束！</div>');
+    throw new Error("expired");
+}
+
+// 显示密码框
+document.write(`
+<div class="pwd-box">
+    <h3>请输入访问密码</h3>
+    <input type="password" id="pwd" placeholder="输入密码">
+    <br>
+    <button onclick="checkPwd()">确认进入</button>
+</div>
+`);
+
+// 验证密码
+function checkPwd() {
+    let val = document.getElementById("pwd").value.trim();
+    if (val !== ACCESS_PASSWORD) {
+        alert("密码错误");
+        return;
+    }
+
+    // 第一次使用记录时间
+    if (!firstUse) {
+        firstUse = now.toString();
+        localStorage.setItem(KEY, firstUse);
+    }
+
+    // 显示页面
+    document.body.innerHTML = `
         <div class="countdown">剩余可查看时间：<span id="timeLeft"></span></div>
         <h2>共享账号，实时更新（刷新需要一点时间）</h2>
         <div class="iframe-box">
             <iframe src="https://www.ermao.net/blog/freeappleid/#%E6%9C%80%E6%96%B0%E5%85%8D%E8%B4%B9%E5%A4%96%E5%8C%BA-apple-id-%E8%B4%A6%E5%8F%B7%E6%B1%A0-%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0" scrolling="no"></iframe>
         </div>
-    `);
-}
-</script>
+    `;
 
-<!-- 倒计时实时刷新 -->
-<script>
-function updateCountdown() {
-    let now = Date.now();
-    let left = expireTime - now;
-
-    if (left <= 0) {
-        document.body.innerHTML = `<div class="expired-box">您的查看有效期已结束！</div>`;
-        return;
-    }
-
-    let h = Math.floor(left / 3600000);
-    let m = Math.floor((left % 3600000) / 60000);
-    let s = Math.floor((left % 60000) / 1000);
-    document.getElementById("timeLeft").innerText = `${h}时${m}分${s}秒`;
-}
-
-if (now <= expireTime) {
+    // 倒计时
+    let expireTime = parseInt(firstUse) + EXPIRE_MS;
     updateCountdown();
     setInterval(updateCountdown, 1000);
+
+    function updateCountdown() {
+        let left = expireTime - Date.now();
+        if (left <= 0) {
+            document.body.innerHTML = '<div class="expired-box">您的查看有效期已结束！</div>';
+            return;
+        }
+        let h = Math.floor(left / 3600000);
+        let m = Math.floor((left % 3600000) / 60000);
+        let s = Math.floor((left % 60000) / 1000);
+        document.getElementById("timeLeft").innerText = `${h}时${m}分${s}秒`;
+    }
 }
 </script>
 
