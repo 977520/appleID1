@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共享账号（实时更新）</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        /* 倒计时样式 */
+        .countdown {
+            background: #ff3b30;
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        /* 过期提示 */
+        .expired-box {
+            text-align: center;
+            font-size: 22px;
+            color: red;
+            padding: 50px 20px;
+            font-weight: bold;
+        }
+        /* 容器：用来裁剪，只显示一小块 */
+        .iframe-box {
+            width: 800px;
+            height: 2400px;
+            overflow: hidden; /* 超出部分直接隐藏 */
+            border: 1px solid #ccc;
+        }
+        /* 把网页往上、往左偏移，只露出你要的那一块 */
+        .iframe-box iframe {
+            width: 800px;
+            height: 3650px;
+            margin-top: -1320px;   /* 向上偏移，隐藏顶部导航 */
+            margin-left: 0px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+// ======================================
+// 1天有效期控制 + 倒计时
+// ======================================
+const ONE_DAY = 72 * 60 * 60 * 1000; // 72小时
+let firstOpen = localStorage.getItem("first_open_time");
+
+// 第一次访问，记录时间
+if (!firstOpen) {
+    firstOpen = Date.now();
+    localStorage.setItem("first_open_time", firstOpen);
+}
+
+let expireTime = parseInt(firstOpen) + ONE_DAY;
+let now = Date.now();
+
+// 判断是否过期
+if (now > expireTime) {
+    document.write(`<div class="expired-box">您的查看有效期已结束！</div>`);
+}
+</script>
+
+<!-- 未过期才显示页面 -->
+<script>
+if (now <= expireTime) {
+    document.write(`
+        <div class="countdown">剩余可查看时间：<span id="timeLeft"></span></div>
+        <h2>共享账号（实时更新）</h2>
+        <div class="iframe-box">
+            <iframe src="https://www.ermao.net/blog/freeappleid/#%E6%9C%80%E6%96%B0%E5%85%8D%E8%B4%B9%E5%A4%96%E5%8C%BA-apple-id-%E8%B4%A6%E5%8F%B7%E6%B1%A0-%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0" scrolling="no"></iframe>
+        </div>
+    `);
+}
+</script>
+
+<!-- 倒计时实时刷新 -->
+<script>
+function updateCountdown() {
+    let now = Date.now();
+    let left = expireTime - now;
+
+    if (left <= 0) {
+        document.body.innerHTML = `<div class="expired-box">您的查看有效期已结束！</div>`;
+        return;
+    }
+
+    let h = Math.floor(left / 3600000);
+    let m = Math.floor((left % 3600000) / 60000);
+    let s = Math.floor((left % 60000) / 1000);
+    document.getElementById("timeLeft").innerText = `${h}时${m}分${s}秒`;
+}
+
+if (now <= expireTime) {
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+</script>
+
+</body>
+</html>
